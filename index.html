@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comité de Calle — Coladera</title>
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:       #ffffff;
+    --bg2:      #f5f5f3;
+    --bg3:      #eeecea;
+    --text:     #1a1a18;
+    --text2:    #6b6b67;
+    --text3:    #a0a09c;
+    --border:   rgba(0,0,0,0.10);
+    --border2:  rgba(0,0,0,0.18);
+    --green-bg: #eaf3de;
+    --green:    #3b6d11;
+    --amber-bg: #faeeda;
+    --amber:    #854f0b;
+    --blue-bg:  #e6f1fb;
+    --blue:     #185fa5;
+    --red-bg:   #fcebeb;
+    --red:      #a32d2d;
+    --radius:   8px;
+    --radius-lg:12px;
+    --shadow:   0 1px 3px rgba(0,0,0,0.07);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:       #1c1c1a;
+      --bg2:      #252523;
+      --bg3:      #2e2e2b;
+      --text:     #f0ede8;
+      --text2:    #9c9990;
+      --text3:    #6b6865;
+      --border:   rgba(255,255,255,0.10);
+      --border2:  rgba(255,255,255,0.18);
+      --green-bg: #173404;
+      --green:    #c0dd97;
+      --amber-bg: #412402;
+      --amber:    #fac775;
+      --blue-bg:  #042c53;
+      --blue:     #b5d4f4;
+      --red-bg:   #501313;
+      --red:      #f7c1c1;
+    }
+  }
+  body {
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg3);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .page    { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  .card    { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+
+  /* ── Topbar ── */
+  .topbar  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .topbar h1 { font-size: 16px; font-weight: 600; }
+  .topbar p  { font-size: 12px; color: var(--text2); margin-top: 1px; }
+  .session   { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); }
+  .avatar    { width: 30px; height: 30px; border-radius: 50%; background: var(--blue-bg); color: var(--blue); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+
+  /* ── Stats ── */
+  .stats    { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 10px; margin-bottom: 1rem; }
+  .stat     { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1rem; }
+  .stat-lbl { font-size: 11px; color: var(--text2); margin-bottom: 3px; }
+  .stat-val { font-size: 22px; font-weight: 600; color: var(--text); }
+  .stat-val.g { color: var(--green); }
+  .stat-val.a { color: var(--amber); }
+
+  /* ── Barra de progreso ── */
+  .prog-wrap { margin-bottom: 1.25rem; }
+  .prog-bar  { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width .4s ease; }
+  .prog-lbl  { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+  /* ── Controles ── */
+  .controls  { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
+  input[type=text], input[type=number], input[type=date], input[type=password], select {
+    height: 36px; border: 0.5px solid var(--border2); border-radius: var(--radius);
+    background: var(--bg); color: var(--text); padding: 0 10px; font-size: 13px; font-family: inherit;
+    outline: none; width: 100%;
+  }
+  input:focus, select:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(24,95,165,.15); }
+  .search { flex: 1; min-width: 160px; }
+  .sort-group { display: flex; gap: 4px; flex-wrap: wrap; }
+  .sort-btn {
+    font-size: 12px; padding: 4px 10px; height: 36px;
+    border: 0.5px solid var(--border2); border-radius: var(--radius);
+    background: transparent; color: var(--text2); cursor: pointer; white-space: nowrap;
+    font-family: inherit;
+  }
+  .sort-btn.active { background: var(--bg2); color: var(--text); border-color: var(--border2); font-weight: 500; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px;
+    border: 0.5px solid var(--border2); border-radius: var(--radius);
+    background: transparent; color: var(--text); font-size: 13px; font-family: inherit;
+    cursor: pointer; white-space: nowrap;
+  }
+  .btn:hover { background: var(--bg2); }
+  .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .btn-primary:hover { opacity: .85; }
+
+  /* ── Tabla ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+  thead th {
+    text-align: left; font-size: 11px; font-weight: 500; color: var(--text2);
+    padding: 6px 10px; border-bottom: 0.5px solid var(--border); white-space: nowrap;
+  }
+  tbody tr { border-bottom: 0.5px solid var(--border); transition: background .1s; }
+  tbody tr:hover { background: var(--bg2); }
+  tbody td { padding: 8px 10px; vertical-align: middle; }
+  td.muted { color: var(--text3); }
+
+  /* ── Pills ── */
+  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 500; }
+  .pill.ok  { background: var(--green-bg); color: var(--green); }
+  .pill.par { background: var(--amber-bg); color: var(--amber); }
+  .pill.pen { background: var(--bg2); color: var(--text2); }
+
+  /* ── Acciones ── */
+  .ico-btn {
+    background: none; border: none; cursor: pointer; padding: 4px 5px; border-radius: 6px;
+    color: var(--text2); font-size: 16px; line-height: 1;
+  }
+  .ico-btn:hover { background: var(--bg2); color: var(--text); }
+  .ico-btn.del:hover { color: var(--red); }
+
+  /* ── Modal ── */
+  .overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    z-index: 200; align-items: center; justify-content: center;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg);
+    padding: 1.5rem; width: min(440px, 94vw); max-height: 90vh; overflow-y: auto;
+    box-shadow: var(--shadow);
+  }
+  .modal h2 { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
+  .form-row { margin-bottom: .75rem; }
+  .form-row label { display: block; font-size: 11px; color: var(--text2); margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+  .form-hint { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.25rem; }
+  .err { font-size: 12px; color: var(--red); min-height: 16px; margin-top: .5rem; }
+
+  /* ── Login ── */
+  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .login-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; width: min(360px,100%); }
+  .login-card h1 { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+  .login-card .sub { font-size: 13px; color: var(--text2); margin-bottom: 1.5rem; }
+
+  /* ── API status ── */
+  .api-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 10px; border-radius: var(--radius); border: 0.5px solid var(--border); color: var(--text2); margin-bottom: 1rem; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); }
+  .dot.on { background: var(--green); }
+  .dot.off { background: var(--amber); }
+
+  /* ── Empty ── */
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text3); }
+  .empty svg { display: block; margin: 0 auto 12px; opacity: .4; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .controls { flex-direction: column; }
+    .search, .sort-group { width: 100%; }
+    .sort-btn { flex: 1; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══════════════════════════════════════════════ -->
+<div id="login-view" class="login-wrap">
+  <div class="login-card">
+    <h1>🏘️ Comité de calle</h1>
+    <p class="sub">Acceso solo para representantes del comité</p>
+    <div class="form-row">
+      <label>Usuario</label>
+      <input type="text" id="l-user" placeholder="eva o arm" autocomplete="username">
+    </div>
+    <div class="form-row">
+      <label>Contraseña</label>
+      <input type="password" id="l-pass" placeholder="••••••" autocomplete="current-password">
+    </div>
+    <div class="err" id="l-err"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem" onclick="doLogin()">Entrar</button>
+    <p style="font-size:11px;color:var(--text3);margin-top:1rem;text-align:center">Sistema de control de recolección de fondos</p>
+  </div>
+</div>
+
+<!-- ═══ APP ══════════════════════════════════════════════════ -->
+<div id="main-view" style="display:none">
+<div class="page">
+
+  <div class="topbar">
+    <div>
+      <h1>Coladera de la calle</h1>
+      <p>Recolección de material • 2024</p>
+    </div>
+    <div class="session">
+      <div class="avatar" id="av">?</div>
+      <span id="sess-name"></span>
+      <button class="btn" onclick="doLogout()" style="height:30px;padding:0 10px;font-size:12px">Salir</button>
+    </div>
+  </div>
+
+  <div class="api-badge"><span class="dot" id="api-dot"></span><span id="api-lbl">Verificando conexión...</span></div>
+
+  <!-- Descripción del proyecto -->
+  <div class="card" style="margin-bottom:1rem">
+    <p style="font-size:13px;color:var(--text2)">
+      <strong style="color:var(--text)">Proyecto:</strong> 2 botes de grava · 2 botes de arena · 1 bulto cemento 25 kg<br>
+      <strong style="color:var(--text)">Meta sin entrega:</strong> $225 &nbsp;|&nbsp;
+      <strong style="color:var(--text)">Meta con entrega:</strong> $307 &nbsp;|&nbsp;
+      Tabiques: $8.50 c/u (cotizar aparte si se solicitan)
+    </p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-lbl">Vecinos registrados</div><div class="stat-val" id="s-total">—</div></div>
+    <div class="stat"><div class="stat-lbl">Han entregado</div><div class="stat-val g" id="s-pagaron">—</div></div>
+    <div class="stat"><div class="stat-lbl">Total recaudado</div><div class="stat-val g" id="s-monto">—</div></div>
+    <div class="stat"><div class="stat-lbl">Faltante (meta $225)</div><div class="stat-val a" id="s-falta">—</div></div>
+  </div>
+
+  <!-- Barra progreso -->
+  <div class="prog-wrap">
+    <div class="prog-bar"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+    <div class="prog-lbl"><span id="prog-pct">0%</span><span>Meta: $225</span></div>
+  </div>
+
+  <!-- Controles -->
+  <div class="controls">
+    <input class="search" type="text" id="search" placeholder="Buscar por nombre o casa…" oninput="cargarVecinos()">
+    <div class="sort-group">
+      <button class="sort-btn active" data-sort="registro" onclick="setSort(this)">Primer registro</button>
+      <button class="sort-btn" data-sort="ultimo"   onclick="setSort(this)">Último</button>
+      <button class="sort-btn" data-sort="alfa"     onclick="setSort(this)">A–Z</button>
+      <button class="sort-btn" data-sort="casa"     onclick="setSort(this)">N.° casa</button>
+    </div>
+    <button class="btn" onclick="openModal()">+ Agregar vecino</button>
+  </div>
+
+  <!-- Tabla -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:32px">#</th>
+            <th>Nombre</th>
+            <th>Casa</th>
+            <th>Entregó</th>
+            <th>Último pago</th>
+            <th>Estado</th>
+            <th style="width:70px"></th>
+          </tr>
+        </thead>
+        <tbody id="tabla"></tbody>
+      </table>
+      <div class="empty" id="empty" style="display:none">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Sin vecinos registrados
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+</div><!-- /main-view -->
+
+<!-- ═══ MODAL VECINO ══════════════════════════════════════════ -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <h2 id="modal-title">Agregar vecino</h2>
+    <div class="form-row">
+      <label>Nombre <span style="color:var(--red)">*</span></label>
+      <input type="text" id="f-nombre" placeholder="Nombre">
+    </div>
+    <div class="form-row">
+      <label>Apellido <span style="color:var(--text3);font-size:10px">(opcional)</span></label>
+      <input type="text" id="f-apellido" placeholder="Apellido">
+    </div>
+    <div class="form-row">
+      <label>N.° de casa <span style="color:var(--text3);font-size:10px">(opcional)</span></label>
+      <input type="text" id="f-casa" placeholder="Ej. 12 o 14-A">
+    </div>
+    <div class="form-row">
+      <label>Monto entregado ($)</label>
+      <input type="number" id="f-monto" min="0" step="1" placeholder="0">
+      <p class="form-hint">Deja en 0 si aún no ha pagado</p>
+    </div>
+    <div class="form-row">
+      <label>Fecha de pago</label>
+      <input type="date" id="f-fecha">
+    </div>
+    <div class="form-row">
+      <label>Nota <span style="color:var(--text3);font-size:10px">(opcional)</span></label>
+      <input type="text" id="f-nota" placeholder="Ej. pagó en dos partes">
+    </div>
+    <div class="err" id="f-err"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardar()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  CONFIGURACIÓN — cambia esta URL por la de tu Worker
+// ══════════════════════════════════════════════════════════════
+const API = 'https://TU-WORKER.TU-USUARIO.workers.dev';
+// Ejemplo: 'https://calle-api.miusuario.workers.dev'
+
+// ── Estado ───────────────────────────────────────────────────
+let currentUser = null;
+let currentPass = null;
+let editId      = null;
+let sortMode    = 'registro';
+let apiOnline   = false;
+
+// ── Cuentas locales de respaldo (solo para offline) ──────────
+// Las contraseñas reales viven en el Worker (variables de entorno)
+const LOCAL_ACCOUNTS = { eva: 'eva2024', arm: 'arm2024' };
+const DISPLAY_NAMES  = { eva: 'Eva', arm: 'Arm' };
+
+// Fallback localStorage cuando el Worker no está disponible
+let localVecinos = JSON.parse(localStorage.getItem('calle_vecinos') || '[]');
+function saveLocal() { localStorage.setItem('calle_vecinos', JSON.stringify(localVecinos)); }
+
+// ── Login ─────────────────────────────────────────────────────
+async function doLogin() {
+  const u = document.getElementById('l-user').value.trim().toLowerCase();
+  const p = document.getElementById('l-pass').value;
+  document.getElementById('l-err').textContent = '';
+
+  // Intentar autenticar contra el Worker
+  try {
+    const r = await fetch(`${API}/health`, {
+      headers: { 'X-User': u, 'X-Pass': p }
+    });
+    if (r.status === 401) { document.getElementById('l-err').textContent = 'Usuario o contraseña incorrectos.'; return; }
+    if (r.ok) { apiOnline = true; }
+  } catch {
+    // Worker no disponible — verificar credenciales locales
+    if (!LOCAL_ACCOUNTS[u] || LOCAL_ACCOUNTS[u] !== p) {
+      document.getElementById('l-err').textContent = 'Usuario o contraseña incorrectos.'; return;
+    }
+  }
+
+  currentUser = u;
+  currentPass = p;
+  sessionStorage.setItem('cu', u);
+  sessionStorage.setItem('cp', p);
+  mostrarApp();
+}
+
+function doLogout() {
+  currentUser = currentPass = null;
+  sessionStorage.clear();
+  document.getElementById('main-view').style.display = 'none';
+  document.getElementById('login-view').style.display = 'flex';
+}
+
+document.getElementById('l-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// ── Mostrar app ───────────────────────────────────────────────
+function mostrarApp() {
+  document.getElementById('login-view').style.display = 'none';
+  document.getElementById('main-view').style.display  = 'block';
+  const name = DISPLAY_NAMES[currentUser] || currentUser.toUpperCase();
+  document.getElementById('sess-name').textContent = name;
+  document.getElementById('av').textContent = name[0].toUpperCase();
+  verificarAPI();
+  cargarVecinos();
+}
+
+async function verificarAPI() {
+  const dot = document.getElementById('api-dot');
+  const lbl = document.getElementById('api-lbl');
+  try {
+    const r = await fetch(`${API}/health`, { headers: hdrs() });
+    apiOnline = r.ok;
+  } catch { apiOnline = false; }
+  dot.className = 'dot ' + (apiOnline ? 'on' : 'off');
+  lbl.textContent = apiOnline ? 'Conectado al servidor' : 'Modo sin conexión — datos locales';
+}
+
+// ── Headers de autenticación ──────────────────────────────────
+function hdrs() {
+  return { 'Content-Type': 'application/json', 'X-User': currentUser, 'X-Pass': currentPass };
+}
+
+// ── Cargar vecinos ────────────────────────────────────────────
+async function cargarVecinos() {
+  const q = document.getElementById('search').value.trim();
+  let lista = [];
+
+  if (apiOnline) {
+    try {
+      const r = await fetch(`${API}/vecinos?sort=${sortMode}${q ? '&q=' + encodeURIComponent(q) : ''}`, { headers: hdrs() });
+      lista = await r.json();
+      if (!r.ok) throw new Error();
+      // Sincronizar local
+      localVecinos = lista.map(v => ({
+        id: v.id, nombre: v.nombre, apellido: v.apellido, casa: v.casa,
+        monto: parseFloat(v.total_pagado) || 0,
+        fecha: v.ultimo_pago || '', creado_por: v.creado_por,
+        timestamp: new Date(v.created_at).getTime()
+      }));
+      saveLocal();
+    } catch { apiOnline = false; lista = filtrarLocal(q); }
+  } else {
+    lista = filtrarLocal(q);
+  }
+
+  renderTabla(lista);
+  actualizarStats(lista);
+}
+
+function filtrarLocal(q) {
+  let l = [...localVecinos];
+  if (q) l = l.filter(v => (v.nombre+' '+(v.apellido||'')).toLowerCase().includes(q.toLowerCase()) || (v.casa||'').includes(q));
+  if (sortMode === 'alfa')    l.sort((a,b) => a.nombre.localeCompare(b.nombre, 'es'));
+  else if (sortMode === 'casa')   l.sort((a,b) => (parseInt(a.casa)||9999)-(parseInt(b.casa)||9999));
+  else if (sortMode === 'ultimo') l.sort((a,b) => b.timestamp - a.timestamp);
+  else                            l.sort((a,b) => a.timestamp - b.timestamp);
+  return l;
+}
+
+function setSort(btn) {
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  sortMode = btn.dataset.sort;
+  cargarVecinos();
+}
+
+// ── Render tabla ──────────────────────────────────────────────
+function renderTabla(lista) {
+  const tb = document.getElementById('tabla');
+  const em = document.getElementById('empty');
+  if (!lista.length) { tb.innerHTML = ''; em.style.display = 'block'; return; }
+  em.style.display = 'none';
+  const META = 225;
+  tb.innerHTML = lista.map((v, i) => {
+    const monto = parseFloat(v.total_pagado ?? v.monto) || 0;
+    const fecha = v.ultimo_pago || v.fecha || '';
+    let pill = '<span class="pill pen">Pendiente</span>';
+    if (monto >= META) pill = '<span class="pill ok">Completo</span>';
+    else if (monto > 0) pill = '<span class="pill par">Parcial</span>';
+    const montoStr = monto > 0 ? `<span style="color:var(--green);font-weight:600">$${monto.toLocaleString('es-MX')}</span>` : '<span style="color:var(--text3)">$0</span>';
+    const nombre = v.nombre + (v.apellido ? ' ' + v.apellido : '');
+    return `<tr>
+      <td class="muted" style="font-size:11px">${i+1}</td>
+      <td><span style="font-weight:500">${esc(nombre)}</span></td>
+      <td class="muted">${v.casa ? esc(v.casa) : '—'}</td>
+      <td>${montoStr}</td>
+      <td class="muted">${fecha ? fmtFecha(fecha) : '—'}</td>
+      <td>${pill}</td>
+      <td style="white-space:nowrap">
+        <button class="ico-btn" onclick="editVecino('${v.id}')" title="Editar">✏️</button>
+        <button class="ico-btn del" onclick="delVecino('${v.id}','${esc(v.nombre)}')" title="Eliminar">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtFecha(f) {
+  try { const d = new Date(f+'T12:00:00'); return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short' }); }
+  catch { return f; }
+}
+
+// ── Stats ─────────────────────────────────────────────────────
+function actualizarStats(lista) {
+  const META = 225;
+  const total = lista.length;
+  const pagaron = lista.filter(v => (parseFloat(v.total_pagado ?? v.monto) || 0) > 0).length;
+  const recaudado = lista.reduce((s, v) => s + (parseFloat(v.total_pagado ?? v.monto) || 0), 0);
+  const falta = Math.max(0, META - recaudado);
+  const pct = Math.min(100, Math.round((recaudado / META) * 100));
+  document.getElementById('s-total').textContent   = total;
+  document.getElementById('s-pagaron').textContent = pagaron;
+  document.getElementById('s-monto').textContent   = '$' + recaudado.toLocaleString('es-MX');
+  document.getElementById('s-falta').textContent   = '$' + falta.toLocaleString('es-MX');
+  document.getElementById('prog').style.width      = pct + '%';
+  document.getElementById('prog-pct').textContent  = pct + '%';
+}
+
+// ── Modal ─────────────────────────────────────────────────────
+function openModal(id = null) {
+  editId = id;
+  document.getElementById('f-err').textContent = '';
+  document.getElementById('modal-title').textContent = id ? 'Editar vecino' : 'Agregar vecino';
+  if (id) {
+    const v = localVecinos.find(x => x.id === id) || {};
+    document.getElementById('f-nombre').value  = v.nombre || '';
+    document.getElementById('f-apellido').value= v.apellido || '';
+    document.getElementById('f-casa').value    = v.casa || '';
+    document.getElementById('f-monto').value   = v.monto || 0;
+    document.getElementById('f-fecha').value   = v.fecha || '';
+    document.getElementById('f-nota').value    = '';
+  } else {
+    ['f-nombre','f-apellido','f-casa','f-nota'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-monto').value = '';
+    document.getElementById('f-fecha').value = new Date().toISOString().slice(0,10);
+  }
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+// ── Guardar ───────────────────────────────────────────────────
+async function guardar() {
+  const nombre   = document.getElementById('f-nombre').value.trim();
+  const apellido = document.getElementById('f-apellido').value.trim();
+  const casa     = document.getElementById('f-casa').value.trim();
+  const monto    = parseFloat(document.getElementById('f-monto').value) || 0;
+  const fecha    = document.getElementById('f-fecha').value;
+  const nota     = document.getElementById('f-nota').value.trim();
+
+  if (!nombre) { document.getElementById('f-err').textContent = 'El nombre es obligatorio.'; return; }
+
+  const payload = { nombre, apellido, casa, monto, fecha, nota };
+
+  if (apiOnline) {
+    try {
+      let r;
+      if (editId) {
+        r = await fetch(`${API}/vecinos/${editId}`, { method:'PUT', headers: hdrs(), body: JSON.stringify(payload) });
+      } else {
+        r = await fetch(`${API}/vecinos`, { method:'POST', headers: hdrs(), body: JSON.stringify(payload) });
+      }
+      if (!r.ok) { document.getElementById('f-err').textContent = 'Error al guardar en el servidor.'; return; }
+    } catch { apiOnline = false; }
+  }
+
+  // Siempre actualizar local
+  if (editId) {
+    const idx = localVecinos.findIndex(v => v.id === editId);
+    if (idx >= 0) localVecinos[idx] = { ...localVecinos[idx], nombre, apellido, casa, monto, fecha };
+  } else {
+    localVecinos.push({
+      id: Date.now().toString(), nombre, apellido, casa, monto, fecha,
+      creado_por: currentUser, timestamp: Date.now()
+    });
+  }
+  saveLocal();
+  closeModal();
+  cargarVecinos();
+}
+
+// ── Editar ────────────────────────────────────────────────────
+function editVecino(id) { openModal(id); }
+
+// ── Eliminar ──────────────────────────────────────────────────
+async function delVecino(id, nombre) {
+  if (!confirm(`¿Eliminar a ${nombre}? Esta acción no se puede deshacer.`)) return;
+  if (apiOnline) {
+    try { await fetch(`${API}/vecinos/${id}`, { method: 'DELETE', headers: hdrs() }); }
+    catch { apiOnline = false; }
+  }
+  localVecinos = localVecinos.filter(v => v.id !== id);
+  saveLocal();
+  cargarVecinos();
+}
+
+// ── Cerrar modal con Escape ───────────────────────────────────
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+// ── Restaurar sesión ──────────────────────────────────────────
+const su = sessionStorage.getItem('cu');
+const sp = sessionStorage.getItem('cp');
+if (su && sp) { currentUser = su; currentPass = sp; mostrarApp(); }
+</script>
+</body>
+</html>
